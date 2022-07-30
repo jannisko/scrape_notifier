@@ -1,16 +1,15 @@
-from contextlib import contextmanager
 from datetime import datetime, timedelta
 import re
 import threading
 import time
-import sqlite3
-from typing import Generator
 import requests
 import logging
 
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters
 import toml
+
+from model import Session, User
 
 config = toml.load("config.toml")
 
@@ -22,38 +21,27 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-@contextmanager
-def db_connection() -> Generator[tuple[sqlite3.Connection, sqlite3.Cursor], None, None]:
-    with sqlite3.connect("users.db") as con:
-        cur = con.cursor()
-        try:
-            yield con, cur
-        finally:
-            cur.close()
-
-
 def echo(update: Update, _):
     chat_id = update.message.chat.id
     logger.info(f"got message from {update.message.chat.id}")
 
-    with db_connection() as (con, cur):
+    with Session() as session:
 
-        cur.execute(f"select id from users where id = {chat_id}")
+        if user := session.query(User).get(chat_id):
 
-        if cur.fetchall() == []:
-            logger.info("inserting user into db")
-            cur.execute(f"insert into users values ({chat_id})")
-            con.commit()
-            update.message.reply_text(
-                "Registered for notifications.\nSend another message to stop all notifications."
-            )
-        else:
             logger.info("removing user from db")
-            cur.execute(f"delete from users where id = {chat_id}")
-            con.commit()
+            session.delete(user)
             update.message.reply_text(
                 "Stopped all notifications.\nSend another message to start sending notifications again."
             )
+        else:
+            logger.info("inserting user into db")
+            session.add(User(telegram_id=chat_id, joined=datetime.now()))
+            update.message.reply_text(
+                "Registered for notifications.\nSend another message to stop all notifications."
+            )
+
+        session.commit()
 
 
 def start_registering_process():
@@ -106,15 +94,14 @@ def scrape():
 
                 url = f"https://api.telegram.org/bot{config['telegram']['token']}"
 
-                with db_connection() as (_, cur):
+                with Session() as session:
 
-                    cur.execute(f"select id from users")
-                    users = cur.fetchall()
+                    users = session.query(User).all()
 
                 logger.info(f"sending messages to {len(users)} users")
 
                 for user in users:
-                    params = {"chat_id": str(int(user[0])), "text": message}
+                    params = {"chat_id": str(user.telegram_id), "text": message}
                     r = requests.get(url + "/sendMessage", params=params)
                     r.raise_for_status()
             else:
