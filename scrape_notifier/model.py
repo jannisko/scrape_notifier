@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-engine = create_engine("sqlite:///users.db")
+engine = create_engine("sqlite:///db.sqlite")
 
 Base = declarative_base()
 

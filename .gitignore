@@ -1,5 +1,5 @@
 .venv
-*.db
+*.sqlite
 config.toml
 dist
 __pycache__
