@@ -3,22 +3,17 @@ import re
 import threading
 import time
 import requests
-import logging
 
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters
 import toml
 
 from model import Session, User
+from utils import logger
 
 config = toml.load("config.toml")
 
 stop_threads = False
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
 
 
 def echo(update: Update, _):
@@ -56,74 +51,71 @@ def start_registering_process():
     updater.idle()
 
 
-def scrape():
-    scrape_link_template = config["scraper"]["link_template"]
+class Scraper(threading.Thread):
 
-    scrape_targets = config["scraper"]["targets"]
+    stop_thread: bool = False
 
-    latest_date = datetime.now() + timedelta(
-        days=config["scraper"]["max_days_in_future"]
-    )
+    def __init__(self):
+        threading.Thread.__init__(self, name="scraper")
 
-    time_since_last_scrape = config["scraper"]["scrape_interval_seconds"]
+    def stop(self):
+        logger.info("Stopping scraper thread")
+        self.stop_thread = True
 
-    while not stop_threads:
-        if time_since_last_scrape >= config["scraper"]["scrape_interval_seconds"]:
-            time_since_last_scrape = 0
+    def run(self):
+        scrape_link_template = config["scraper"]["link_template"]
 
-            logger.info("scraping all links")
+        scrape_targets = config["scraper"]["targets"]
 
-            message = ""
-            for target in scrape_targets:
+        latest_date = datetime.now() + timedelta(
+            days=config["scraper"]["max_days_in_future"]
+        )
 
-                resp = requests.get(scrape_link_template.format(**target))
+        time_since_last_scrape = config["scraper"]["scrape_interval_seconds"]
 
-                if match := re.search(config["scraper"]["extraction_regex"], resp.text):
+        while not self.stop_thread:
+            if time_since_last_scrape >= config["scraper"]["scrape_interval_seconds"]:
+                time_since_last_scrape = 0
 
-                    # use named groups here instead of index
-                    date = config["scraper"]["date_template"].format(*match.groups())
+                logger.info("scraping all links")
 
-                    if datetime.strptime(date, "%d.%m.%Y") < latest_date:
+                message = ""
+                for target in scrape_targets:
 
-                        message += config["scraper"]["message_template"].format(
-                            **target, date=date
+                    resp = requests.get(scrape_link_template.format(**target))
+
+                    if match := re.search(
+                        config["scraper"]["extraction_regex"], resp.text
+                    ):
+
+                        # use named groups here instead of index
+                        date = config["scraper"]["date_template"].format(
+                            *match.groups()
                         )
 
-            if message:
-                logger.info("Found valid scrape target!")
+                        if datetime.strptime(date, "%d.%m.%Y") < latest_date:
 
-                url = f"https://api.telegram.org/bot{config['telegram']['token']}"
+                            message += config["scraper"]["message_template"].format(
+                                **target, date=date
+                            )
 
-                with Session() as session:
+                if message:
+                    logger.info("Found valid scrape target!")
 
-                    users = session.query(User).all()
+                    url = f"https://api.telegram.org/bot{config['telegram']['token']}"
 
-                logger.info(f"sending messages to {len(users)} users")
+                    with Session() as session:
 
-                for user in users:
-                    params = {"chat_id": str(user.telegram_id), "text": message}
-                    r = requests.get(url + "/sendMessage", params=params)
-                    r.raise_for_status()
+                        users = session.query(User).all()
+
+                    logger.info(f"sending messages to {len(users)} users")
+
+                    for user in users:
+                        params = {"chat_id": str(user.telegram_id), "text": message}
+                        r = requests.get(url + "/sendMessage", params=params)
+                        r.raise_for_status()
+                else:
+                    logger.info("No valid scrape target found.")
             else:
-                logger.info("No valid scrape target found.")
-        else:
-            time.sleep(1)
-            time_since_last_scrape += 1
-
-
-if __name__ == "__main__":
-
-    import alembic.command
-    import alembic.config
-
-    alembic_cfg = alembic.config.Config("alembic.ini")
-    alembic_cfg.attributes["configure_logger"] = False
-    alembic.command.upgrade(alembic_cfg, "head")
-
-    t = threading.Thread(target=scrape, daemon=True)
-    t.start()
-    start_registering_process()
-
-    stop_threads = True
-
-    t.join()
+                time.sleep(1)
+                time_since_last_scrape += 1

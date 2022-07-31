@@ -1,9 +1,17 @@
+import alembic.command
+import alembic.config
 from sqlalchemy import create_engine, Column, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 engine = create_engine("sqlite:///db.sqlite")
 
 Base = declarative_base()
+
+
+def migrate():
+    alembic_cfg = alembic.config.Config("alembic.ini")
+    alembic_cfg.attributes["configure_logger"] = False
+    alembic.command.upgrade(alembic_cfg, "head")
 
 
 class User(Base):
