@@ -11,4 +11,4 @@ RUN poetry install --no-dev --no-interaction
 COPY alembic.ini .
 COPY scrape_notifier scrape_notifier
 
-CMD ["./.venv/bin/python", "-u", "scrape_notifier"]
+ENTRYPOINT ["./.venv/bin/python", "-u", "scrape_notifier"]
