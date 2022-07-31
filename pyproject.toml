@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "scrape_notifier"
 version = "0.1.0"
-description = ""
+description = "A web-scraper-telegram-bot-combo for notifiying you about free appointments."
 authors = ["Jannis Kowalick <jannisko99@gmail.com>"]
 license = "MIT"
 
