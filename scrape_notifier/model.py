@@ -13,11 +13,7 @@ class User(Base):
     joined = Column(DateTime)
 
     def __repr__(self) -> str:
-        return (
-            f"<User: telegram_id: {self.telegram_id}, joined: {self.joined.isoformat()}"
-        )
+        return f"<User: telegram_id: {self.telegram_id}, joined: {self.joined.isoformat()}>"
 
-
-Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)

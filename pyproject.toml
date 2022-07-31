@@ -11,6 +11,7 @@ requests = "^2.28.1"
 python-telegram-bot = "^13.13"
 toml = "^0.10.2"
 SQLAlchemy = "^1.4.39"
+alembic = "^1.8.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
