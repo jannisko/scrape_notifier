@@ -113,6 +113,13 @@ def scrape():
 
 if __name__ == "__main__":
 
+    import alembic.command
+    import alembic.config
+
+    alembic_cfg = alembic.config.Config("alembic.ini")
+    alembic_cfg.attributes["configure_logger"] = False
+    alembic.command.upgrade(alembic_cfg, "head")
+
     t = threading.Thread(target=scrape, daemon=True)
     t.start()
     start_registering_process()
