@@ -1,14 +1,13 @@
-from datetime import datetime, timedelta
 import re
 import threading
 import time
+from datetime import datetime, timedelta
+
 import requests
-
-from telegram import Update
-from telegram.ext import Updater, MessageHandler, Filters
 import toml
-
 from model import Session, User
+from telegram import Update
+from telegram.ext import Filters, MessageHandler, Updater
 from utils import logger
 
 config = toml.load("config.toml")
@@ -27,13 +26,15 @@ def echo(update: Update, _):
             logger.info("removing user from db")
             session.delete(user)
             update.message.reply_text(
-                "Stopped all notifications.\nSend another message to start sending notifications again."
+                "Stopped all notifications.\n"
+                "Send another message to start sending notifications again."
             )
         else:
             logger.info("inserting user into db")
             session.add(User(telegram_id=chat_id, joined=datetime.now()))
             update.message.reply_text(
-                "Registered for notifications.\nSend another message to stop all notifications."
+                "Registered for notifications.\n"
+                "Send another message to stop all notifications."
             )
 
         session.commit()

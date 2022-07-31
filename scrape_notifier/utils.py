@@ -1,4 +1,5 @@
 import logging
+
 import toml
 
 logging.basicConfig(

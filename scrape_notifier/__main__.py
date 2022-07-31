@@ -1,11 +1,10 @@
-import click
-import toml
-
-from main import Scraper, start_registering_process
-import model
-from utils import logger
-
 import pathlib
+
+import click
+import model
+import toml
+from main import Scraper, start_registering_process
+from utils import logger
 
 
 @click.group(help=toml.load("pyproject.toml")["tool"]["poetry"]["description"])
