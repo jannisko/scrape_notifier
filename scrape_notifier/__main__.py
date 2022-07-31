@@ -1,8 +1,8 @@
 import click
 import toml
 
-from scrape_notifier.main import Scraper, start_registering_process
-from scrape_notifier import model
+from main import Scraper, start_registering_process
+import model
 from utils import logger
 
 import pathlib
