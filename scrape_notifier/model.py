@@ -1,14 +1,16 @@
+import pathlib
 import alembic.command
 import alembic.config
 from sqlalchemy import create_engine, Column, Integer, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-engine = create_engine("sqlite:///db.sqlite")
+engine = create_engine("sqlite:///data/db.sqlite")
 
 Base = declarative_base()
 
 
 def migrate():
+    pathlib.Path("data").mkdir(exist_ok=True)
     alembic_cfg = alembic.config.Config("alembic.ini")
     alembic_cfg.attributes["configure_logger"] = False
     alembic.command.upgrade(alembic_cfg, "head")

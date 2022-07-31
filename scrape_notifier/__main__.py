@@ -26,7 +26,7 @@ def migrate():
 @cli.command(short_help="run the scraper and telegram bot")
 def start():
 
-    if not pathlib.Path("db.sqlite").exists():
+    if not pathlib.Path("data/db.sqlite").exists():
         logger.info("Could not find a DB file, creating one from scratch")
         model.migrate()
 
