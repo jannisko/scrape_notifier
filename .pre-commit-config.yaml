@@ -23,9 +23,8 @@ repos:
       - id: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.971
-    # additional stubs must be given manually unfortunately:
-    # https://github.com/pre-commit/mirrors-mypy/issues/50
-
     hooks:
     - id: mypy
+      # additional stubs must be given manually unfortunately:
+      # https://github.com/pre-commit/mirrors-mypy/issues/50
       additional_dependencies: [types-toml, types-requests]
