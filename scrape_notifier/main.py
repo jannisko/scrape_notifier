@@ -13,8 +13,6 @@ from scrape_notifier.utils import logger
 
 config = toml.load("config.toml")
 
-stop_threads = False
-
 
 def echo(update: Update, _):
 
