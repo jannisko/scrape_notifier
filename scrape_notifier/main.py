@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 
 import requests
 import toml
-from model import Session, User
 from telegram import Update
 from telegram.ext import Filters, MessageHandler, Updater
-from utils import logger
+
+from scrape_notifier.model import Session, User
+from scrape_notifier.utils import logger
 
 config = toml.load("config.toml")
 
