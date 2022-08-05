@@ -16,28 +16,33 @@ stop_threads = False
 
 
 def echo(update: Update, _):
-    chat_id = update.message.chat.id
-    logger.info(f"got message from {update.message.chat.id}")
 
-    with Session() as session:
+    if message := update.message:
 
-        if user := session.query(User).get(chat_id):
+        chat_id = message.chat.id
+        logger.info(f"got message from {message.chat.id}")
 
-            logger.info("removing user from db")
-            session.delete(user)
-            update.message.reply_text(
-                "Stopped all notifications.\n"
-                "Send another message to start sending notifications again."
-            )
-        else:
-            logger.info("inserting user into db")
-            session.add(User(telegram_id=chat_id, joined=datetime.now()))
-            update.message.reply_text(
-                "Registered for notifications.\n"
-                "Send another message to stop all notifications."
-            )
+        with Session() as session:
 
-        session.commit()
+            if user := session.query(User).get(chat_id):
+
+                logger.info("removing user from db")
+                session.delete(user)
+                message.reply_text(
+                    "Stopped all notifications.\n"
+                    "Send another message to start sending notifications again."
+                )
+            else:
+                logger.info("inserting user into db")
+                session.add(User(telegram_id=chat_id, joined=datetime.now()))
+                message.reply_text(
+                    "Registered for notifications.\n"
+                    "Send another message to stop all notifications."
+                )
+
+            session.commit()
+    else:
+        logger.warning(f"Received update, that wasn't a message: {repr(update)}")
 
 
 def start_registering_process():

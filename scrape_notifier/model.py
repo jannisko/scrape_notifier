@@ -3,11 +3,13 @@ import pathlib
 import alembic.command
 import alembic.config
 from sqlalchemy import Column, DateTime, Integer, create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
 
 engine = create_engine("sqlite:///data/db.sqlite")
 
-Base = declarative_base()
+# set here to help out mypy with type inference
+# https://github.com/python/mypy/issues/2477#issuecomment-703142484
+Base: DeclarativeMeta = declarative_base()
 
 
 def migrate():
