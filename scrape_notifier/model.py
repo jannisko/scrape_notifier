@@ -2,7 +2,7 @@ import pathlib
 
 import alembic.command
 import alembic.config
-from sqlalchemy import Column, DateTime, Integer, create_engine
+from sqlalchemy import Column, DateTime, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
 
 engine = create_engine("sqlite:///data/db.sqlite")
@@ -23,13 +23,29 @@ class User(Base):
     __tablename__ = "users"
 
     telegram_id = Column(Integer, primary_key=True)
-    joined = Column(DateTime)
+    joined_at = Column(DateTime)
 
     def __repr__(self) -> str:
         return (
             f"<User: telegram_id: {self.telegram_id}, "
-            "joined: {self.joined.isoformat()}>"
+            f"joined: {self.joined_at.isoformat()}>"
         )
+
+
+class SentNotification(Base):
+    """Table storing a history of sent notifications"""
+
+    __tablename__ = "sent_notifications"
+
+    sent_at = Column(DateTime, primary_key=True)
+    scrape_target = Column(String, primary_key=True)
+    # user_id = Column(Integer, ForeignKey("users.telegram_id"), primary_key=True)
+
+    # TODO: set cascade
+    # user = relationship("User")
+
+    def __repr__(self) -> str:
+        return f"<SentNotification: {self.scrape_target=}, {self.sent_at=}"
 
 
 Session = sessionmaker(bind=engine)
