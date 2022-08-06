@@ -1,14 +1,15 @@
 from datetime import datetime, timedelta
 from typing import cast
-from scrape_notifier.model import SentNotification
+
 from scrape_notifier.main import Scraper
+from scrape_notifier.model import SentNotification
 
 # TODO: make all of this dependent on the scrape_interval
 
 
 def _simulate_messages(interval: timedelta, runs: int) -> list[SentNotification]:
 
-    history = []
+    history: list[SentNotification] = []
     start = datetime(2022, 1, 1, 8, 0, 0)
     for i in range(runs):
         next_message_time = start + interval * i
