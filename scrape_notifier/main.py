@@ -2,13 +2,14 @@ import re
 import threading
 import time
 from datetime import datetime, timedelta
+from typing import cast
 
 import requests
 import toml
 from telegram import Update
 from telegram.ext import Filters, MessageHandler, Updater
 
-from scrape_notifier.model import Session, User
+from scrape_notifier.model import SentNotification, Session, User
 from scrape_notifier.utils import logger
 
 config = toml.load("config.toml")
@@ -124,3 +125,33 @@ class Scraper(threading.Thread):
             else:
                 time.sleep(1)
                 time_since_last_scrape += 1
+
+    @staticmethod
+    def should_send_message(
+        notification_history: list[SentNotification],
+        current_time: datetime,
+    ) -> bool:
+
+        # filter out all old notifications
+        # TODO: make dependent on scrape_interval
+        notification_history = [
+            n
+            for n in notification_history
+            if current_time - n.sent_at < timedelta(days=1)
+        ]
+
+        if len(notification_history) > 0:
+            notification_times = [n.sent_at for n in notification_history]
+            # to handle missing sqlalchemy type hints
+            notification_times = cast(list[datetime], notification_times)
+
+            latest_notification = sorted(notification_times)[-1]
+            time_since_last_notification = current_time - latest_notification
+
+        else:
+            time_since_last_notification = timedelta(0)
+
+        logger.debug(f"{time_since_last_notification=}, {len(notification_history)=}")
+        return time_since_last_notification >= len(notification_history) * timedelta(
+            minutes=5
+        )
