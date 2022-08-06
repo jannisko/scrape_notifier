@@ -44,7 +44,7 @@ def echo(update: Update, _):
         logger.warning(f"Received update, that wasn't a message: {repr(update)}")
 
 
-def start_registering_process():
+def start_telegram_bot():
     updater = Updater(config["telegram"]["token"])
 
     dispatcher = updater.dispatcher

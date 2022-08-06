@@ -4,7 +4,7 @@ import click
 import toml
 
 from scrape_notifier import model
-from scrape_notifier.main import Scraper, start_registering_process
+from scrape_notifier.main import Scraper, start_telegram_bot
 from scrape_notifier.utils import logger
 
 
@@ -30,12 +30,12 @@ def start():
         logger.info("Could not find a DB file, creating one from scratch")
         model.migrate()
 
-    t = Scraper()
-    t.start()
-    start_registering_process()
+    scraper_thread = Scraper()
+    scraper_thread.start()
+    start_telegram_bot()
 
-    t.stop()
-    t.join()
+    scraper_thread.stop()
+    scraper_thread.join()
 
 
 if __name__ == "__main__":
