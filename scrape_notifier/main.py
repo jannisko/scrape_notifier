@@ -29,7 +29,7 @@ def echo(update: Update, _):
                 )
             else:
                 logger.info("inserting user into db")
-                session.add(User(telegram_id=chat_id, joined=datetime.now()))
+                session.add(User(telegram_id=chat_id, joined_at=datetime.now()))
                 message.reply_text(
                     "Registered for notifications.\n"
                     "Send another message to stop all notifications."
