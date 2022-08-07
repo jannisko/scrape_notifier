@@ -1,4 +1,5 @@
 import pathlib
+import threading
 
 import click
 import toml
@@ -33,14 +34,14 @@ def start():
 
     config = toml.load("config.toml")
 
-    scraper_thread = Scraper(
-        **config["scraper"], telegram_token=config["telegram"]["token"]
-    )
+    scraper = Scraper(**config["scraper"], telegram_token=config["telegram"]["token"])
+
+    scraper_thread = threading.Thread(target=scraper.run, name="scraper")
 
     scraper_thread.start()
     start_telegram_bot()
 
-    scraper_thread.stop()
+    scraper.stop()
     scraper_thread.join()
 
 

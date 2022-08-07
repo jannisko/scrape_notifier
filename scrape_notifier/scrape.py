@@ -1,5 +1,4 @@
 import re
-import threading
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -12,7 +11,7 @@ from scrape_notifier.utils import logger
 
 
 @dataclass
-class Scraper(threading.Thread):
+class Scraper:
 
     link_template: str
     targets: list[dict[str, Any]]
@@ -25,14 +24,6 @@ class Scraper(threading.Thread):
     telegram_token: str
 
     stop_thread: bool = False
-
-    def __post_init__(self):
-        threading.Thread.__init__(self, name="scraper")
-
-    # must overwrite hash here so threading works
-    # https://stackoverflow.com/a/2134487
-    def __hash__(self):
-        return hash(id(self))
 
     def stop(self):
         logger.info("Stopping scraper thread")
