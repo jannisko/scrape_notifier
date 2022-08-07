@@ -90,6 +90,10 @@ class Scraper:
             if current_time - n.sent_at < timedelta(days=1)
         ]
 
+        time_until_next_send = timedelta(minutes=5) * 2 ** len(
+            notification_history
+        ) - timedelta(minutes=5)
+
         if len(notification_history) > 0:
             notification_times = [n.sent_at for n in notification_history]
             # to handle missing sqlalchemy type hints
@@ -101,7 +105,8 @@ class Scraper:
         else:
             time_since_last_notification = timedelta(0)
 
-        logger.debug(f"{time_since_last_notification=}, {len(notification_history)=}")
-        return time_since_last_notification >= len(notification_history) * timedelta(
-            minutes=5
+        logger.debug(
+            f"{time_since_last_notification=}, {len(notification_history)=}"
+            f", {time_until_next_send=}"
         )
+        return time_since_last_notification >= time_until_next_send

@@ -28,6 +28,7 @@ def test_increasing_timeouts():
     ]
     timeouts = cast(list[timedelta], timeouts)
 
+    assert len(history) > 0
     print([t.seconds for t in timeouts])
     assert all([next_ > this for this, next_ in zip(timeouts, timeouts[1:])])
 
