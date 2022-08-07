@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import cast
 
-from scrape_notifier.main import Scraper
 from scrape_notifier.model import SentNotification
+from scrape_notifier.scrape import Scraper
 
 # TODO: make all of this dependent on the scrape_interval
 
