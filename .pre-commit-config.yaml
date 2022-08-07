@@ -27,3 +27,4 @@ repos:
       # additional stubs must be given manually unfortunately:
       # https://github.com/pre-commit/mirrors-mypy/issues/50
       additional_dependencies: [types-toml, types-requests]
+      args: [ --check-untyped-defs, --ignore-missing-imports ]

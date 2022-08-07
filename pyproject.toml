@@ -36,6 +36,7 @@ profile = "black"
 exclude = [
     "scrape_notifier/migrations",
 ]
+check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 # as of sqlalchemy<2 it is still largely untyped. This could be fixed with version 2.0
