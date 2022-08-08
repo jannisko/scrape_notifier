@@ -37,7 +37,7 @@ def echo(update: Update, _):
 
             session.commit()
     else:
-        logger.warning(f"Received update, that wasn't a message: {repr(update)}")
+        logger.warning(f"Received update, that wasn't a message: {update.to_dict()}")
 
 
 def start_telegram_bot():

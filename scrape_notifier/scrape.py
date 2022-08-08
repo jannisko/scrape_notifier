@@ -69,7 +69,13 @@ class Scraper:
                     for user in users:
                         params = {"chat_id": str(user.telegram_id), "text": message}
                         r = requests.get(url + "/sendMessage", params=params)
-                        r.raise_for_status()
+
+                        if not r.ok:
+                            logger.error(
+                                f"Message to {user.telegram_id} failed with error: "
+                                f"{r.text}"
+                            )
+
                 else:
                     logger.info("No valid scrape target found.")
             else:
