@@ -5,6 +5,7 @@ import click
 import toml
 
 from scrape_notifier import model
+from scrape_notifier.config import get_config
 from scrape_notifier.main import start_telegram_bot
 from scrape_notifier.scrape import Scraper
 from scrape_notifier.utils import logger
@@ -32,9 +33,11 @@ def start():
         logger.info("Could not find a DB file, creating one from scratch")
         model.migrate()
 
-    config = toml.load("config.toml")
+    config = get_config()
 
-    scraper = Scraper(**config["scraper"], telegram_token=config["telegram"]["token"])
+    scraper = Scraper(
+        **config.scraper.dict(), telegram_token=config.telegram.token.get_secret_value()
+    )
 
     scraper_thread = threading.Thread(target=scraper.run, name="scraper")
 

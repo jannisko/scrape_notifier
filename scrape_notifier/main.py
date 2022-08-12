@@ -1,13 +1,13 @@
 from datetime import datetime
 
-import toml
 from telegram import Update
 from telegram.ext import Filters, MessageHandler, Updater
 
+from scrape_notifier.config import get_config
 from scrape_notifier.model import Session, User
 from scrape_notifier.utils import logger
 
-config = toml.load("config.toml")
+config = get_config()
 
 
 def echo(update: Update, _):
@@ -41,7 +41,7 @@ def echo(update: Update, _):
 
 
 def start_telegram_bot():
-    updater = Updater(config["telegram"]["token"])
+    updater = Updater(token=config.telegram.token.get_secret_value())
 
     dispatcher = updater.dispatcher
 
