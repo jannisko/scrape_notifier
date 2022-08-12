@@ -57,7 +57,7 @@ class Scraper:
         all_scrape_results = self.scrape()
 
         valid_scrape_results = [
-            res for res in all_scrape_results if res[0] < latest_date
+            res for res in all_scrape_results if res.date < latest_date.date()
         ]
 
         if len(valid_scrape_results) > 0:
