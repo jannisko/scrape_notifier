@@ -3,7 +3,7 @@ token = ""
 
 [scraper]
 link_template = "https://example.gov/appointments/index.php?office={office_index}"
-message_template = "Found free date at {date} for office '{office_name}'\nhttps://example.gov/appointments/index.php?office={office_index}\n"
+message_template = "Found free date at {date} for office [{office_name}](https://example.gov/appointments/index.php?office={office_index})\n"
 # list of variables to fill templates with
 targets = [
     {office_name = "Downtown", office_index = 0},
