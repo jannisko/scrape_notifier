@@ -87,7 +87,10 @@ class Scraper:
                 for res in results
                 if self.should_send_message(
                     notification_history=session.query(SentNotification)
-                    .filter(SentNotification.scrape_target == json.dumps(res[1]))
+                    .filter(
+                        SentNotification.scrape_target == json.dumps(res[1]),
+                        SentNotification.date_found == res[0],
+                    )
                     .all(),
                     current_time=datetime.now(),
                 )
@@ -134,6 +137,7 @@ class Scraper:
                         SentNotification(
                             scrape_target=json.dumps(res[1]),
                             sent_at=datetime.now(),
+                            date_found=res[0],
                         )
                         for res in non_rate_limited_results
                     ]

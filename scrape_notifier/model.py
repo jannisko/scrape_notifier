@@ -2,7 +2,7 @@ import pathlib
 
 import alembic.command
 import alembic.config
-from sqlalchemy import Column, DateTime, Integer, String, create_engine
+from sqlalchemy import Column, Date, DateTime, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeMeta, declarative_base, sessionmaker
 
 engine = create_engine("sqlite:///data/db.sqlite")
@@ -39,13 +39,17 @@ class SentNotification(Base):
 
     sent_at = Column(DateTime, primary_key=True)
     scrape_target = Column(String, primary_key=True)
+    date_found = Column(Date, primary_key=True)
     # user_id = Column(Integer, ForeignKey("users.telegram_id"), primary_key=True)
 
     # TODO: set cascade
     # user = relationship("User")
 
     def __repr__(self) -> str:
-        return f"<SentNotification: {self.scrape_target=}, {self.sent_at=}"
+        return (
+            f"<SentNotification: {self.scrape_target=}, {self.date_found=}"
+            f", {self.sent_at=}"
+        )
 
 
 Session = sessionmaker(bind=engine)
