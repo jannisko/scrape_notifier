@@ -1,3 +1,4 @@
+import pathlib
 from typing import Any, Dict, Tuple
 
 import toml
@@ -6,8 +7,11 @@ from pydantic.env_settings import SettingsSourceCallable
 
 
 def toml_config_settings_source(_: BaseSettings) -> Dict[str, Any]:
-
-    return toml.load("config.toml")
+    path = pathlib.Path("config.toml")
+    if path.is_file():
+        return toml.load("config.toml")
+    else:
+        return {}
 
 
 class Config(BaseSettings):
