@@ -144,22 +144,23 @@ class Scraper:
                 )
                 session.commit()
 
-    @staticmethod
     def should_send_message(
+        self,
         notification_history: list[SentNotification],
         current_time: datetime,
     ) -> bool:
 
+        interval = timedelta(seconds=self.scrape_interval_seconds)
+
         # filter out all old notifications
-        # TODO: make dependent on scrape_interval
         notification_history = [
             n
             for n in notification_history
-            if current_time - n.sent_at < timedelta(days=1)
+            if current_time - n.sent_at < (interval * 100)
         ]
 
         if len(notification_history) > 0:
-            time_until_next_send = timedelta(minutes=5) * 2 ** len(notification_history)
+            time_until_next_send = interval * 2 ** len(notification_history)
 
             notification_times = [n.sent_at for n in notification_history]
             # to handle missing sqlalchemy type hints
