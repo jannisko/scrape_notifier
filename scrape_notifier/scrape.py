@@ -2,13 +2,18 @@ import json
 import re
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, cast
+from datetime import date, datetime, timedelta
+from typing import Any, NamedTuple, cast
 
 import requests
 
 from scrape_notifier.model import SentNotification, Session, User
 from scrape_notifier.utils import logger
+
+
+class ValidTarget(NamedTuple):
+    date: date
+    target: dict[str, Any]
 
 
 @dataclass
@@ -61,9 +66,9 @@ class Scraper:
         else:
             logger.info("No valid scrape target found.")
 
-    def scrape(self) -> list[tuple[datetime, dict["str", Any]]]:
+    def scrape(self) -> list[ValidTarget]:
 
-        results: list[tuple[datetime, dict["str", Any]]] = []
+        results: list[ValidTarget] = []
         for target in self.targets:
 
             resp = requests.get(self.link_template.format(**target))
@@ -73,13 +78,13 @@ class Scraper:
                 # TODO: use named groups here instead of index
                 date = datetime.strptime(
                     self.date_template.format(*match.groups()), "%d.%m.%Y"
-                )
+                ).date()
 
-                results.append((date, target))
+                results.append(ValidTarget(date, target))
 
         return results
 
-    def send_messages(self, results: list[tuple[datetime, dict["str", Any]]]):
+    def send_messages(self, results: list[ValidTarget]):
 
         with Session() as session:
             non_rate_limited_results = [
@@ -88,8 +93,8 @@ class Scraper:
                 if self.should_send_message(
                     notification_history=session.query(SentNotification)
                     .filter(
-                        SentNotification.scrape_target == json.dumps(res[1]),
-                        SentNotification.date_found == res[0],
+                        SentNotification.scrape_target == json.dumps(res.target),
+                        SentNotification.date_found == res.date,
                     )
                     .all(),
                     current_time=datetime.now(),
@@ -106,7 +111,7 @@ class Scraper:
                 message = "".join(
                     [
                         self.message_template.format(
-                            **res[1], date=res[0].strftime("%d.%m.%Y")
+                            **res.target, date=res.date.strftime("%d.%m.%Y")
                         )
                         for res in non_rate_limited_results
                     ]
@@ -137,7 +142,7 @@ class Scraper:
                         SentNotification(
                             scrape_target=json.dumps(res[1]),
                             sent_at=datetime.now(),
-                            date_found=res[0],
+                            date_found=res.date,
                         )
                         for res in non_rate_limited_results
                     ]
