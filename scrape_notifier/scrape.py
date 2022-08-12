@@ -3,7 +3,7 @@ import re
 import time
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Any, NamedTuple, cast
+from typing import Any, Callable, NamedTuple, cast
 
 import requests
 
@@ -120,6 +120,7 @@ class Scraper:
                 url = f"https://api.telegram.org/bot{self.telegram_token}"
 
                 users = session.query(User).all()
+                users = cast(list[User], users)
 
                 logger.info(f"sending messages to {len(users)} users")
 
@@ -132,10 +133,21 @@ class Scraper:
                     r = requests.get(url + "/sendMessage", params=params)
 
                     if not r.ok:
+
                         logger.error(
                             f"Message to {user.telegram_id} failed with error: "
                             f"{r.text}"
                         )
+
+                        error_actions: dict[str, Callable[[User], None]] = {
+                            "Forbidden:"
+                            "bot was blocked by the user": lambda user: session.delete(
+                                user
+                            )
+                        }
+
+                        if action := error_actions.get(r.json()["description"]):
+                            action(user)
 
                 session.add_all(
                     [
