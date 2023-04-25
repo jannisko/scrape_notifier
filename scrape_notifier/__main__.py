@@ -26,9 +26,23 @@ def migrate():
     model.migrate()
 
 
-@cli.command(short_help="run the scraper and telegram bot")
-def start():
+@db.command(short_help="print registered users")
+def users() -> None:
+    import sqlite3
 
+    import rich.pretty
+
+    with sqlite3.connect("data/db.sqlite") as con:
+        cur = con.cursor()
+        try:
+            cur.execute("select * from users")
+            rich.pretty.pprint(cur.fetchall())
+        finally:
+            cur.close()
+
+
+@cli.command(short_help="run the scraper and telegram bot")
+def start() -> None:
     if not pathlib.Path("data/db.sqlite").exists():
         logger.info("Could not find a DB file, creating one from scratch")
         model.migrate()
