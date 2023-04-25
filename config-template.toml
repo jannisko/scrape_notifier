@@ -1,5 +1,6 @@
 [telegram]
 token = ""
+admin_ids = []
 
 [scraper]
 link_template = "https://example.gov/appointments/index.php?office={office_index}"

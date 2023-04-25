@@ -50,7 +50,9 @@ def start() -> None:
     config = get_config()
 
     scraper = Scraper(
-        **config.scraper.dict(), telegram_token=config.telegram.token.get_secret_value()
+        **config.scraper.dict(),
+        telegram_token=config.telegram.token.get_secret_value(),
+        telegram_admin_users=config.telegram.admin_ids,
     )
 
     scraper_thread = threading.Thread(target=scraper.run, name="scraper")

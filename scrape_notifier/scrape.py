@@ -18,7 +18,6 @@ class ValidTarget(NamedTuple):
 
 @dataclass
 class Scraper:
-
     link_template: str
     targets: list[dict[str, Any]]
     max_days_in_future: int
@@ -28,15 +27,28 @@ class Scraper:
     message_template: str
 
     telegram_token: str
+    telegram_admin_users: list[int]
 
     stop_thread: bool = False
+
+    def notify_admins(self, message: str) -> None:
+        for admin_id in self.telegram_admin_users:
+            params = {
+                "chat_id": str(admin_id),
+                "text": message,
+                "parse_mode": "Markdown",
+            }
+            url = f"https://api.telegram.org/bot{self.telegram_token}"
+            resp = requests.get(url + "/sendMessage", params=params, timeout=60)
+
+            if not resp.ok:
+                logger.warning("Couldn't send message to admins. RIP. %s", resp.reason)
 
     def stop(self):
         logger.info("Stopping scraper thread")
         self.stop_thread = True
 
     def run(self):
-
         time_since_last_scrape = self.scrape_interval_seconds
 
         while not self.stop_thread:
@@ -45,13 +57,17 @@ class Scraper:
 
                 logger.info("scraping all links")
 
-                self.scrape_and_notify()
+                try:
+                    self.scrape_and_notify()
+                except Exception as error:
+                    logger.error(error)
+                    raise error
+
             else:
                 time.sleep(1)
                 time_since_last_scrape += 1
 
     def scrape_and_notify(self):
-
         latest_date = datetime.now() + timedelta(days=self.max_days_in_future)
 
         all_scrape_results = self.scrape()
@@ -67,25 +83,33 @@ class Scraper:
             logger.info("No valid scrape target found.")
 
     def scrape(self) -> list[ValidTarget]:
-
         results: list[ValidTarget] = []
         for target in self.targets:
+            try:
+                resp = requests.get(self.link_template.format(**target), timeout=20)
+            except requests.exceptions.ConnectionError as error:
+                logger.error("Scraping %s threw error: %s", target, error)
+                self.notify_admins("Scraping %s threw error: %s" % (target, error))
+            except Exception as else_error:
+                logger.error(
+                    "Scraping %s threw unexpected error: %s", target, else_error
+                )
+                self.notify_admins(
+                    "Scraping %s threw unexpected error: %s" % (target, else_error)
+                )
+                raise else_error
+            else:
+                if match := re.search(self.extraction_regex, resp.text):
+                    # TODO: use named groups here instead of index
+                    found_date = datetime.strptime(
+                        self.date_template.format(*match.groups()), "%d.%m.%Y"
+                    ).date()
 
-            resp = requests.get(self.link_template.format(**target))
-
-            if match := re.search(self.extraction_regex, resp.text):
-
-                # TODO: use named groups here instead of index
-                date = datetime.strptime(
-                    self.date_template.format(*match.groups()), "%d.%m.%Y"
-                ).date()
-
-                results.append(ValidTarget(date, target))
+                    results.append(ValidTarget(found_date, target))
 
         return results
 
     def send_messages(self, results: list[ValidTarget]):
-
         with Session() as session:
             non_rate_limited_results = [
                 res
@@ -107,7 +131,6 @@ class Scraper:
             )
 
             if len(non_rate_limited_results) > 0:
-
                 message = "".join(
                     [
                         self.message_template.format(
@@ -133,17 +156,13 @@ class Scraper:
                     r = requests.get(url + "/sendMessage", params=params)
 
                     if not r.ok:
-
                         logger.error(
                             f"Message to {user.telegram_id} failed with error: "
                             f"{r.text}"
                         )
 
                         error_actions: dict[str, Callable[[User], None]] = {
-                            "Forbidden:"
-                            "bot was blocked by the user": lambda user: session.delete(
-                                user
-                            )
+                            "Forbidden:" "bot was blocked by the user": session.delete
                         }
 
                         if action := error_actions.get(r.json()["description"]):
@@ -166,7 +185,6 @@ class Scraper:
         notification_history: list[SentNotification],
         current_time: datetime,
     ) -> bool:
-
         interval = timedelta(seconds=self.scrape_interval_seconds)
 
         # filter out all old notifications

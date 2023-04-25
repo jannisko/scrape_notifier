@@ -8,7 +8,9 @@ from scrape_notifier.scrape import Scraper
 
 example_config = toml.load("config-template.toml")
 example_scraper = Scraper(
-    **example_config["scraper"], telegram_token=example_config["telegram"]["token"]
+    **example_config["scraper"],
+    telegram_token=example_config["telegram"]["token"],
+    telegram_admin_users=example_config["telegram"]["admin_ids"],
 )
 
 
