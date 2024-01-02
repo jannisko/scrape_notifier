@@ -45,8 +45,8 @@ class Config(BaseSettings):
         ) -> Tuple[SettingsSourceCallable, ...]:
             return (
                 init_settings,
-                toml_config_settings_source,
                 env_settings,
+                toml_config_settings_source,
                 file_secret_settings,
             )
 
