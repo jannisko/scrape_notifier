@@ -13,4 +13,6 @@ COPY scrape_notifier scrape_notifier
 # install again to actually install the code as a local package
 RUN poetry install --no-dev --no-interaction
 
-ENTRYPOINT [".venv/bin/scrape-notifier"]
+COPY config.toml .
+
+ENTRYPOINT [".venv/bin/scrape-notifier", "start"]
