@@ -9,6 +9,7 @@ from scrape_notifier.config import get_config
 from scrape_notifier.main import start_telegram_bot
 from scrape_notifier.scrape import Scraper
 from scrape_notifier.utils import logger
+from scrape_notifier.health import start_healthcheck_endpoint
 
 
 @click.group(help=toml.load("pyproject.toml")["tool"]["poetry"]["description"])
@@ -56,12 +57,19 @@ def start() -> None:
     )
 
     scraper_thread = threading.Thread(target=scraper.run, name="scraper")
-
     scraper_thread.start()
+
+    healtcheck_endpoint_thread = threading.Thread(
+        target=start_healthcheck_endpoint,
+        name="healthcheck_endpoint"
+    )
+    healtcheck_endpoint_thread.start()
+
     start_telegram_bot()
 
     scraper.stop()
     scraper_thread.join()
+    healtcheck_endpoint_thread.join()
 
 
 if __name__ == "__main__":
