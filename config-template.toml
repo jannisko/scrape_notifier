@@ -1,3 +1,5 @@
+environment = "stage"
+
 [telegram]
 token = ""
 admin_ids = []

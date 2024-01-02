@@ -15,6 +15,9 @@ def toml_config_settings_source(_: BaseSettings) -> Dict[str, Any]:
 
 
 class Config(BaseSettings):
+
+    environment: str
+
     class Telegram(BaseModel):
         token: SecretStr
         admin_ids: list[int]
