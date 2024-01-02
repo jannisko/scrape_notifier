@@ -8,7 +8,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.9"
 requests = "^2.28.1"
-python-telegram-bot = "^13.13"
+python-telegram-bot = "^20.7"
 toml = "^0.10.2"
 SQLAlchemy = "^1.4.39"
 alembic = "^1.8.1"
@@ -42,15 +42,10 @@ scrape-notifier = "scrape_notifier.__main__:cli"
 profile = "black"
 
 [tool.mypy]
-exclude = [
-    "scrape_notifier/migrations",
-]
+exclude = ["scrape_notifier/migrations"]
 check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 # as of sqlalchemy<2 it is still largely untyped. This could be fixed with version 2.0
-module = [
-    "sqlalchemy",
-    "sqlalchemy.orm",
-]
+module = ["sqlalchemy", "sqlalchemy.orm"]
 ignore_missing_imports = true
