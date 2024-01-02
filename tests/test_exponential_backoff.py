@@ -15,7 +15,6 @@ example_scraper = Scraper(
 
 
 def _simulate_messages(interval: timedelta, runs: int) -> list[SentNotification]:
-
     history: list[SentNotification] = []
     start = datetime(2022, 1, 1, 8, 0, 0)
     for i in range(runs):
@@ -27,7 +26,6 @@ def _simulate_messages(interval: timedelta, runs: int) -> list[SentNotification]
 
 
 def test_increasing_timeouts():
-
     history = _simulate_messages(timedelta(minutes=5), 100)
 
     timeouts = [
@@ -45,7 +43,6 @@ def test_always_send_first_message():
 
 
 def test_ignore_old_history():
-
     send_time = datetime(2022, 1, 1, 8, 0, 0)
     old_notification = SentNotification(sent_at=send_time - timedelta(days=365))
 
