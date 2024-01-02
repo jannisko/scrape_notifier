@@ -17,6 +17,7 @@ def toml_config_settings_source(_: BaseSettings) -> Dict[str, Any]:
 class Config(BaseSettings):
 
     environment: str
+    sentry_dsn: str | None
 
     class Telegram(BaseModel):
         token: SecretStr

@@ -1,5 +1,8 @@
 environment = "stage"
 
+# insert to enable sentry error reporting
+# sentry_dsn = ""
+
 [telegram]
 token = ""
 admin_ids = []

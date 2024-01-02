@@ -2,14 +2,15 @@ import pathlib
 import threading
 
 import click
+import sentry_sdk
 import toml
 
 from scrape_notifier import model
 from scrape_notifier.config import get_config
+from scrape_notifier.health import start_healthcheck_endpoint
 from scrape_notifier.main import start_telegram_bot
 from scrape_notifier.scrape import Scraper
 from scrape_notifier.utils import logger
-from scrape_notifier.health import start_healthcheck_endpoint
 
 
 @click.group(help=toml.load("pyproject.toml")["tool"]["poetry"]["description"])
@@ -44,11 +45,18 @@ def users() -> None:
 
 @cli.command(short_help="run the scraper and telegram bot")
 def start() -> None:
+
+    config = get_config()
+
+    if config.sentry_dsn is not None:
+        sentry_sdk.init(
+            dsn=config.sentry_dsn,
+            environment=config.environment,
+        )
+
     if not pathlib.Path("data/db.sqlite").exists():
         logger.info("Could not find a DB file, creating one from scratch")
         model.migrate()
-
-    config = get_config()
 
     scraper = Scraper(
         **config.scraper.dict(),
@@ -60,8 +68,7 @@ def start() -> None:
     scraper_thread.start()
 
     healtcheck_endpoint_thread = threading.Thread(
-        target=start_healthcheck_endpoint,
-        name="healthcheck_endpoint"
+        target=start_healthcheck_endpoint, name="healthcheck_endpoint"
     )
     healtcheck_endpoint_thread.start()
 
