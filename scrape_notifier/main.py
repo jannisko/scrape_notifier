@@ -11,16 +11,12 @@ config = get_config()
 
 
 def echo(update: Update, _):
-
     if message := update.message:
-
         chat_id = message.chat.id
         logger.info(f"got message from {message.chat.id}")
 
         with Session() as session:
-
             if user := session.query(User).get(chat_id):
-
                 logger.info("removing user from db")
                 session.delete(user)
                 message.reply_text(

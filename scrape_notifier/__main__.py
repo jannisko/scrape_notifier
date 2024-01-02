@@ -45,7 +45,6 @@ def users() -> None:
 
 @cli.command(short_help="run the scraper and telegram bot")
 def start() -> None:
-
     config = get_config()
 
     if config.sentry_dsn is not None:
